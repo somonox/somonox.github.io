@@ -25,6 +25,15 @@ layout: default
                     <path d="M7 11V7a5 5 0 0 1 10 0v4" />
                 </svg>
             </div>
+            {% if page.tags contains 'wargame' or page.categories contains 'wargame' %}
+            <h3>🚩 Enter the flag to unlock</h3>
+            <p>문제의 flag를 입력하면 풀이를 확인할 수 있습니다.</p>
+            <div class="decrypt-input-group">
+                <input type="password" id="password-input" placeholder="flag{...}" autocomplete="off">
+                <button onclick="decryptContent()">Submit</button>
+            </div>
+            <p id="error-message" class="decrypt-error">Incorrect flag</p>
+            {% else %}
             <h3>This post is password protected</h3>
             <p>비밀번호를 입력하면 내용을 확인할 수 있습니다.</p>
             <div class="decrypt-input-group">
@@ -32,6 +41,7 @@ layout: default
                 <button onclick="decryptContent()">Unlock</button>
             </div>
             <p id="error-message" class="decrypt-error">Incorrect password</p>
+            {% endif %}
         </div>
 
         <div id="decrypted-content" style="display: none;"></div>
