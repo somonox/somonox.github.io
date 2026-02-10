@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Post Encryptor - Advanced Markdown Editor</title>
+    <title>Post Editor - Advanced Markdown Editor</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -469,8 +469,8 @@
 <body>
     <div class="app-container">
         <header>
-            <h1>🔐 Post Encryptor</h1>
-            <p>마크다운 콘텐츠를 작성하고 AES-256으로 암호화하세요</p>
+            <h1>📝 Post Editor</h1>
+            <p>마크다운 콘텐츠를 작성하고 포스트를 생성하세요</p>
         </header>
 
         <div class="post-meta-inputs">
@@ -554,8 +554,8 @@
 
         <div class="output-section" id="output-section">
             <div class="output-header">
-                <h3>암호화된 포스트 파일</h3>
-                <span class="success-badge">✓ 암호화 완료</span>
+                <h3>생성된 포스트 파일</h3>
+                <span class="success-badge" id="output-badge">✓ 생성 완료</span>
             </div>
             <div class="output-content" id="output"></div>
         </div>
@@ -564,7 +564,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
-        const STORAGE_KEY = 'postEncryptorDraft';
+        const STORAGE_KEY = 'postEditorDraft';
 
         // Initialize
         document.getElementById('post-date').valueAsDate = new Date();
@@ -694,8 +694,8 @@
             debouncedSave();
         }
 
-        // Generate post (encrypted or normal)
-        function generatePost() {
+        // Generate post content (encrypted or normal)
+        function generatePostContent() {
             const content = markdownInput.value;
             const title = document.getElementById('post-title').value || 'Untitled Post';
             const date = document.getElementById('post-date').value;
@@ -703,16 +703,14 @@
             const isEncrypted = document.getElementById('encrypt-toggle').checked;
 
             if (!content.trim()) {
-                alert('콘텐츠를 입력해주세요.');
-                return;
+                return null;
             }
 
             let output;
             if (isEncrypted) {
                 const password = document.getElementById('password').value;
                 if (!password) {
-                    alert('비밀번호를 입력해주세요.');
-                    return;
+                    return null;
                 }
                 const encrypted = CryptoJS.AES.encrypt(content, password).toString();
                 output = `---
@@ -733,8 +731,30 @@ ${category ? `categories: ${category}` : ''}
 ${content}`;
             }
 
-            document.getElementById('output').textContent = output;
-            document.getElementById('output-section').classList.add('visible');
+            return output;
+        }
+
+        // Generate post and show output
+        function generatePost() {
+            const content = markdownInput.value;
+            if (!content.trim()) {
+                alert('콘텐츠를 입력해주세요.');
+                return;
+            }
+
+            const isEncrypted = document.getElementById('encrypt-toggle').checked;
+            if (isEncrypted && !document.getElementById('password').value) {
+                alert('비밀번호를 입력해주세요.');
+                return;
+            }
+
+            const output = generatePostContent();
+            if (output) {
+                const badge = document.getElementById('output-badge');
+                badge.textContent = isEncrypted ? '✓ 암호화 완료' : '✓ 생성 완료';
+                document.getElementById('output').textContent = output;
+                document.getElementById('output-section').classList.add('visible');
+            }
         }
 
         // Generate Jekyll-compatible filename
@@ -752,10 +772,19 @@ ${content}`;
         }
 
         function downloadFile() {
-            const output = document.getElementById('output').textContent;
+            let output = document.getElementById('output').textContent;
             if (!output) {
-                alert('먼저 암호화를 진행해주세요.');
-                return;
+                // Auto-generate the post content for download
+                output = generatePostContent();
+                if (!output) {
+                    const isEncrypted = document.getElementById('encrypt-toggle').checked;
+                    if (isEncrypted && !document.getElementById('password').value) {
+                        alert('암호화 모드에서는 비밀번호를 입력해주세요.');
+                    } else {
+                        alert('콘텐츠를 입력해주세요.');
+                    }
+                    return;
+                }
             }
 
             const filename = generateFilename();
@@ -772,10 +801,19 @@ ${content}`;
         }
 
         function copyToClipboard() {
-            const output = document.getElementById('output').textContent;
+            let output = document.getElementById('output').textContent;
             if (!output) {
-                alert('먼저 암호화를 진행해주세요.');
-                return;
+                // Auto-generate the post content for copy
+                output = generatePostContent();
+                if (!output) {
+                    const isEncrypted = document.getElementById('encrypt-toggle').checked;
+                    if (isEncrypted && !document.getElementById('password').value) {
+                        alert('암호화 모드에서는 비밀번호를 입력해주세요.');
+                    } else {
+                        alert('콘텐츠를 입력해주세요.');
+                    }
+                    return;
+                }
             }
             navigator.clipboard.writeText(output);
             alert('클립보드에 복사되었습니다!');
