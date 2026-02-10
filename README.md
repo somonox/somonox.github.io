@@ -1,29 +1,34 @@
-# somonox blog
+### Hello there, I'm somonox! 👋
 
-A portfolio blog built with Jekyll. Features encrypted posts, dark mode, and a clean design.
+**Enjoy PS and Making something!** <br>
+**My language stack** <br>
+C++, Python, Go, JavaScript(TypeScript), HTML/CSS <br>
+**Currently BOJ Platinum V** <br>
+**Never stops learning!** <br>
 
-## Features
-- **Portfolio Design** — Hero section, category filters, animated post cards
-- **Dark / Light Mode** — Toggle or auto-detect system preference
-- **Encrypted Posts** — AES-256 client-side encryption
-- **Responsive** — Mobile-first with glassmorphism header
+### My Main projects
 
-## Local Development
+| Project                    | Description                                  | Technology                         |
+| -------------------------- | -------------------------------------------- | ------------------------------ |
+| **ASTER**                  | DDos testing tool for server management                | C++, Raw Socket                |
+| **BOJ**                    | Baekjoon Online Judge PS codes            | C++ or Assembly                            |
+| **salmOS**                 | Light and Fast Operating System              | Assembly                     |
 
-```bash
-bundle install
-bundle exec jekyll serve
-```
+### GitHub Stats
 
-## Creating Encrypted Posts
+<p align="center">
+  <img src="https://github-readme-stats.vercel.app/api?username=somonox&show_icons=true&theme=transparent" alt="stats"/>
+  <img src="https://github-readme-streak-stats.herokuapp.com/?user=somonox&theme=transparent" alt="streak"/>
+  <img src="https://github-readme-stats.vercel.app/api/top-langs/?username=somonox&layout=compact&hide=html,css&theme=transparent" alt="langs"/>
+</p>
 
-1. Open `scripts/encrypt.html` in your browser
-2. Write content in Markdown and enter a password
-3. Click **Encrypt** and copy the output
-4. Create a new file in `_posts/` with the encrypted content
+### Tech Stack
 
-## Structure
-- `_layouts/` — HTML templates (default, home, post, encrypted)
-- `_posts/` — Blog posts
-- `assets/css/` — Stylesheet
-- `scripts/` — Encryption tool
+![C++](https://img.shields.io/badge/C++-00599C?style=for-the-badge\&logo=c%2b%2b\&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge\&logo=python\&logoColor=white)
+![Go](https://img.shields.io/badge/Go-00ADD8?style=for-the-badge\&logo=go\&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge\&logo=javascript\&logoColor=black)
+![HTML5](https://img.shields.io/badge/HTML-E34F26?style=for-the-badge\&logo=html5\&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS-1572B6?style=for-the-badge\&logo=css3\&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge\&logo=node.js\&logoColor=white)
+![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge\&logo=linux\&logoColor=black)
