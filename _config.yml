@@ -1,0 +1,25 @@
+title: "somonox"
+description: "Security Researcher & Developer"
+baseurl: ""
+url: ""
+theme: null
+
+# Author
+author:
+  name: "somonox"
+  bio: "Security Research / Pwn / Reverse Engineering"
+  github: "somonox"
+
+show_excerpts: true
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - node_modules
+  - vendor/bundle/
+  - vendor/cache/
+  - vendor/gems/
+  - vendor/ruby/
+  - _drafts_original
+  - preview
+  - scripts

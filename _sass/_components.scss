@@ -1,0 +1,84 @@
+.post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+        margin-bottom: $spacing-unit * 2;
+    }
+}
+
+.post-link {
+    display: block;
+    font-size: 1.5rem;
+    font-family: $font-family-serif;
+    font-weight: 700;
+    margin-bottom: $spacing-unit * 0.25;
+}
+
+.post-meta {
+    color: $color-secondary-light;
+    font-size: 0.9rem;
+
+    @media (prefers-color-scheme: dark) {
+        color: $color-secondary-dark;
+    }
+}
+
+.post-content {
+    margin-bottom: $spacing-unit * 2;
+}
+
+// Encryption Form
+#decrypt-form {
+    margin-top: $spacing-unit * 2;
+    padding: $spacing-unit * 2;
+    border: 1px solid $color-border-light;
+    border-radius: 8px;
+    background-color: #f7fafc;
+
+    @media (prefers-color-scheme: dark) {
+        border-color: $color-border-dark;
+        background-color: #2d3748;
+    }
+
+    input[type="password"] {
+        width: 100%;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+        border: 1px solid $color-border-light;
+        border-radius: 4px;
+        background-color: white;
+        color: $color-text-light;
+
+        @media (prefers-color-scheme: dark) {
+            border-color: $color-border-dark;
+            background-color: $color-bg-dark;
+            color: $color-text-dark;
+        }
+    }
+
+    button {
+        padding: 0.75rem 1.5rem;
+        background-color: $color-primary-light;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+        transition: background-color 0.2s;
+
+        &:hover {
+            background-color: darken($color-primary-light, 10%);
+        }
+
+        @media (prefers-color-scheme: dark) {
+            background-color: $color-primary-dark;
+            color: $color-bg-dark;
+
+            &:hover {
+                background-color: lighten($color-primary-dark, 10%);
+            }
+        }
+    }
+}

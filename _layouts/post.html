@@ -1,0 +1,73 @@
+---
+layout: default
+---
+<article class="post">
+
+    <header class="post-header">
+        <div class="post-header-meta">
+            <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">
+                {{ page.date | date: "%Y.%m.%d" }}
+            </time>
+            {% for cat in page.categories %}
+            <span class="post-category-badge">{{ cat }}</span>
+            {% endfor %}
+            {% assign words = content | number_of_words %}
+            {% assign minutes = words | divided_by: 200 %}
+            {% if minutes < 1 %}{% assign minutes=1 %}{% endif %} <span class="reading-time">{{ minutes }} min
+                read</span>
+        </div>
+        <h1 class="post-title">{{ page.title | escape }}</h1>
+        {% if page.author %}
+        <div class="post-author">
+            by <span>{{ page.author }}</span>
+        </div>
+        {% endif %}
+    </header>
+
+    <div class="post-content">
+        {{ content }}
+    </div>
+
+    <footer class="post-footer">
+        {% if page.tags.size > 0 %}
+        <div class="post-tags">
+            {% for tag in page.tags %}
+            <span class="tag">#{{ tag }}</span>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <nav class="post-nav">
+            {% if page.previous.url %}
+            <a class="post-nav-item prev" href="{{ page.previous.url | relative_url }}">
+                <span class="post-nav-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                    </svg>
+                    Previous
+                </span>
+                <span class="post-nav-title">{{ page.previous.title | escape }}</span>
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+
+            {% if page.next.url %}
+            <a class="post-nav-item next" href="{{ page.next.url | relative_url }}">
+                <span class="post-nav-label">
+                    Next
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+                <span class="post-nav-title">{{ page.next.title | escape }}</span>
+            </a>
+            {% endif %}
+        </nav>
+    </footer>
+
+</article>

@@ -1,0 +1,113 @@
+---
+layout: default
+---
+<article class="post">
+
+    <header class="post-header">
+        <div class="post-header-meta">
+            <time class="post-date" datetime="{{ page.date | date_to_xmlschema }}">
+                {{ page.date | date: "%Y.%m.%d" }}
+            </time>
+            {% for cat in page.categories %}
+            <span class="post-category-badge">{{ cat }}</span>
+            {% endfor %}
+            <span class="post-encrypted-badge">🔒 Encrypted</span>
+        </div>
+        <h1 class="post-title">{{ page.title | escape }}</h1>
+    </header>
+
+    <div class="post-content">
+        <div id="decrypt-form" class="decrypt-card">
+            <div class="decrypt-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+            </div>
+            <h3>This post is password protected</h3>
+            <p>비밀번호를 입력하면 내용을 확인할 수 있습니다.</p>
+            <div class="decrypt-input-group">
+                <input type="password" id="password-input" placeholder="Enter password" autocomplete="off">
+                <button onclick="decryptContent()">Unlock</button>
+            </div>
+            <p id="error-message" class="decrypt-error">Incorrect password</p>
+        </div>
+
+        <div id="decrypted-content" style="display: none;"></div>
+
+        <!-- Hidden encrypted content store -->
+        <div id="encrypted-data" style="display: none;">{{ content | strip_newlines }}</div>
+    </div>
+
+    <footer class="post-footer">
+        <nav class="post-nav">
+            {% if page.previous.url %}
+            <a class="post-nav-item prev" href="{{ page.previous.url | relative_url }}">
+                <span class="post-nav-label">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12" />
+                        <polyline points="12 19 5 12 12 5" />
+                    </svg>
+                    Previous
+                </span>
+                <span class="post-nav-title">{{ page.previous.title | escape }}</span>
+            </a>
+            {% else %}
+            <div></div>
+            {% endif %}
+
+            {% if page.next.url %}
+            <a class="post-nav-item next" href="{{ page.next.url | relative_url }}">
+                <span class="post-nav-label">
+                    Next
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                        <polyline points="12 5 19 12 12 19" />
+                    </svg>
+                </span>
+                <span class="post-nav-title">{{ page.next.title | escape }}</span>
+            </a>
+            {% endif %}
+        </nav>
+    </footer>
+
+</article>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+    function decryptContent() {
+        var password = document.getElementById('password-input').value;
+        var encryptedData = document.getElementById('encrypted-data').innerText.trim();
+        var errorMessage = document.getElementById('error-message');
+        var decryptForm = document.getElementById('decrypt-form');
+        var contentDiv = document.getElementById('decrypted-content');
+
+        try {
+            var decrypted = CryptoJS.AES.decrypt(encryptedData, password);
+            var result = decrypted.toString(CryptoJS.enc.Utf8);
+
+            if (result) {
+                contentDiv.innerHTML = marked.parse(result);
+                contentDiv.style.display = 'block';
+                decryptForm.style.display = 'none';
+            } else {
+                errorMessage.classList.add('visible');
+                document.getElementById('password-input').classList.add('shake');
+                setTimeout(() => document.getElementById('password-input').classList.remove('shake'), 500);
+            }
+        } catch (e) {
+            errorMessage.classList.add('visible');
+            document.getElementById('password-input').classList.add('shake');
+            setTimeout(() => document.getElementById('password-input').classList.remove('shake'), 500);
+        }
+    }
+
+    // Allow Enter key
+    document.getElementById('password-input').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') decryptContent();
+    });
+</script>

@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Encryptor - Advanced Markdown Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <style>
+        :root {
+            --bg-primary: #0f0f1a;
+            --bg-secondary: #1a1a2e;
+            --bg-tertiary: #252540;
+            --text-primary: #e8e8f0;
+            --text-secondary: #a0a0b0;
+            --accent-1: #667eea;
+            --accent-2: #764ba2;
+            --border: rgba(102, 126, 234, 0.2);
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .editor-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            flex: 1;
+            min-height: 500px;
+        }
+
+        @media (max-width: 900px) {
+            .editor-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 10px 40px var(--shadow);
+        }
+
+        .panel-header {
+            padding: 1rem 1.25rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-header h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .panel-body {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #markdown-input {
+            flex: 1;
+            width: 100%;
+            padding: 1.25rem;
+            background: transparent;
+            border: none;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            line-height: 1.7;
+            resize: none;
+            outline: none;
+        }
+
+        #markdown-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.5;
+        }
+
+        #preview {
+            flex: 1;
+            padding: 1.25rem;
+            overflow-y: auto;
+            background: var(--bg-primary);
+        }
+
+        #preview h1,
+        #preview h2,
+        #preview h3 {
+            background: linear-gradient(135deg, #a8b4ff, #c9a8ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-top: 1.5em;
+            margin-bottom: 0.5em;
+            font-weight: 700;
+        }
+
+        #preview h1:first-child,
+        #preview h2:first-child,
+        #preview h3:first-child {
+            margin-top: 0;
+        }
+
+        #preview h1 {
+            font-size: 1.8rem;
+        }
+
+        #preview h2 {
+            font-size: 1.4rem;
+        }
+
+        #preview h3 {
+            font-size: 1.2rem;
+        }
+
+        #preview p {
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+        }
+
+        #preview ul,
+        #preview ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+
+        #preview li {
+            margin-bottom: 0.5rem;
+        }
+
+        #preview code {
+            background: rgba(102, 126, 234, 0.15);
+            padding: 0.2em 0.5em;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85em;
+        }
+
+        #preview pre {
+            background: var(--bg-tertiary);
+            padding: 1rem;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 1rem;
+        }
+
+        #preview pre code {
+            background: none;
+            padding: 0;
+        }
+
+        #preview blockquote {
+            border-left: 3px solid var(--accent-1);
+            padding-left: 1rem;
+            margin: 1rem 0;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        #preview a {
+            color: var(--accent-1);
+        }
+
+        .controls {
+            margin-top: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .password-section {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .password-section label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .password-section input {
+            flex: 1;
+            min-width: 200px;
+            max-width: 300px;
+            padding: 0.875rem 1rem;
+            background: var(--bg-tertiary);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            transition: all 0.3s ease;
+        }
+
+        .password-section input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.15);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            color: white;
+            box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-secondary);
+            border-color: var(--accent-1);
+        }
+
+        .output-section {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .output-section.visible {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .output-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .output-header h3 {
+            font-size: 1.1rem;
+            color: var(--text-primary);
+        }
+
+        .output-content {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-all;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .success-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .post-meta-inputs {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding: 1.25rem;
+            background: var(--bg-tertiary);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        .meta-input {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .meta-input label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .meta-input input {
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: inherit;
+        }
+
+        .meta-input input:focus {
+            outline: none;
+            border-color: var(--accent-1);
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .toolbar button {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.85rem;
+            background: transparent;
+            color: var(--text-secondary);
+            border-radius: 6px;
+        }
+
+        .toolbar button:hover {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .char-count {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            text-align: right;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Toggle Switch */
+        .toggle-switch {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .toggle-switch input[type="checkbox"] {
+            display: none;
+        }
+
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .toggle-switch input:checked+.toggle-label {
+            background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+            border-color: transparent;
+        }
+
+        .toggle-switch input:checked+.toggle-label .toggle-text {
+            color: white;
+        }
+
+        .toggle-text {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-container">
+        <header>
+            <h1>🔐 Post Encryptor</h1>
+            <p>마크다운 콘텐츠를 작성하고 AES-256으로 암호화하세요</p>
+        </header>
+
+        <div class="post-meta-inputs">
+            <div class="meta-input">
+                <label>포스트 제목</label>
+                <input type="text" id="post-title" placeholder="My Post Title">
+            </div>
+            <div class="meta-input">
+                <label>날짜</label>
+                <input type="date" id="post-date">
+            </div>
+            <div class="meta-input">
+                <label>카테고리</label>
+                <input type="text" id="post-category" placeholder="study, diary">
+            </div>
+            <div class="meta-input">
+                <label>암호화</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" id="encrypt-toggle" checked>
+                    <label for="encrypt-toggle" class="toggle-label">
+                        <span class="toggle-text" id="toggle-text">🔒 암호화</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="editor-container">
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>📝 Markdown Editor</h2>
+                </div>
+                <div class="toolbar">
+                    <button onclick="insertText('**', '**')" title="Bold">B</button>
+                    <button onclick="insertText('*', '*')" title="Italic">I</button>
+                    <button onclick="insertText('# ', '')" title="Heading">H1</button>
+                    <button onclick="insertText('## ', '')" title="Heading 2">H2</button>
+                    <button onclick="insertText('- ', '')" title="List">•</button>
+                    <button onclick="insertText('`', '`')" title="Code">{ }</button>
+                    <button onclick="insertText('[', '](url)')" title="Link">🔗</button>
+                </div>
+                <div class="panel-body">
+                    <textarea id="markdown-input" placeholder="# 비밀 포스트
+
+여기에 마크다운 콘텐츠를 작성하세요...
+
+- 리스트 아이템 1
+- 리스트 아이템 2
+
+**굵은 텍스트**와 *기울임 텍스트*를 사용할 수 있습니다.
+
+> 인용문도 지원됩니다."></textarea>
+                </div>
+                <div class="char-count">
+                    <span id="char-count">0</span> 글자
+                </div>
+            </div>
+
+            <div class="panel">
+                <div class="panel-header">
+                    <h2>👁️ Live Preview</h2>
+                </div>
+                <div class="panel-body">
+                    <div id="preview"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="password-section" id="password-section">
+                <label>🔑 암호화 비밀번호:</label>
+                <input type="password" id="password" placeholder="강력한 비밀번호 입력">
+            </div>
+            <div class="button-group">
+                <button class="btn-primary" onclick="generatePost()" id="generate-btn">🔒 암호화하기</button>
+                <button class="btn-primary" onclick="downloadFile()"
+                    style="background: linear-gradient(135deg, #34d399, #059669);">📥 파일 다운로드</button>
+                <button class="btn-secondary" onclick="copyToClipboard()">📋 결과 복사</button>
+                <button class="btn-secondary" onclick="clearAll()">🗑️ 초기화</button>
+            </div>
+        </div>
+
+        <div class="output-section" id="output-section">
+            <div class="output-header">
+                <h3>암호화된 포스트 파일</h3>
+                <span class="success-badge">✓ 암호화 완료</span>
+            </div>
+            <div class="output-content" id="output"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        const STORAGE_KEY = 'postEncryptorDraft';
+
+        // Initialize
+        document.getElementById('post-date').valueAsDate = new Date();
+
+        const markdownInput = document.getElementById('markdown-input');
+        const preview = document.getElementById('preview');
+        const charCount = document.getElementById('char-count');
+
+        // Load saved draft
+        function loadDraft() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const draft = JSON.parse(saved);
+                    if (draft.content) markdownInput.value = draft.content;
+                    if (draft.title) document.getElementById('post-title').value = draft.title;
+                    if (draft.category) document.getElementById('post-category').value = draft.category;
+                    if (draft.date) document.getElementById('post-date').value = draft.date;
+                    charCount.textContent = markdownInput.value.length;
+                    updatePreview();
+                    showSaveStatus('📂 이전 작업을 복원했습니다');
+                } catch (e) {
+                    console.error('Failed to load draft:', e);
+                }
+            }
+        }
+
+        // Save draft to localStorage
+        function saveDraft() {
+            const draft = {
+                content: markdownInput.value,
+                title: document.getElementById('post-title').value,
+                category: document.getElementById('post-category').value,
+                date: document.getElementById('post-date').value,
+                savedAt: new Date().toISOString()
+            };
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(draft));
+            showSaveStatus('💾 자동 저장됨');
+        }
+
+        // Show save status
+        function showSaveStatus(message) {
+            let status = document.getElementById('save-status');
+            if (!status) {
+                status = document.createElement('div');
+                status.id = 'save-status';
+                status.style.cssText = `
+                    position: fixed;
+                    bottom: 20px;
+                    right: 20px;
+                    background: var(--bg-tertiary);
+                    color: var(--text-secondary);
+                    padding: 0.75rem 1.25rem;
+                    border-radius: 10px;
+                    font-size: 0.85rem;
+                    border: 1px solid var(--border);
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                    z-index: 1000;
+                `;
+                document.body.appendChild(status);
+            }
+            status.textContent = message;
+            status.style.opacity = '1';
+            setTimeout(() => {
+                status.style.opacity = '0';
+            }, 2000);
+        }
+
+        // Debounced auto-save
+        let saveTimeout;
+        function debouncedSave() {
+            clearTimeout(saveTimeout);
+            saveTimeout = setTimeout(saveDraft, 1000);
+        }
+
+        // Live preview with auto-save
+        markdownInput.addEventListener('input', () => {
+            updatePreview();
+            charCount.textContent = markdownInput.value.length;
+            debouncedSave();
+        });
+
+        // Also save on meta input changes
+        document.getElementById('post-title').addEventListener('input', debouncedSave);
+        document.getElementById('post-category').addEventListener('input', debouncedSave);
+        document.getElementById('post-date').addEventListener('change', debouncedSave);
+
+        // Toggle encryption mode
+        const encryptToggle = document.getElementById('encrypt-toggle');
+        const passwordSection = document.getElementById('password-section');
+        const generateBtn = document.getElementById('generate-btn');
+        const toggleText = document.getElementById('toggle-text');
+
+        encryptToggle.addEventListener('change', () => {
+            if (encryptToggle.checked) {
+                passwordSection.style.display = 'flex';
+                generateBtn.textContent = '🔒 암호화하기';
+                toggleText.textContent = '🔒 암호화';
+            } else {
+                passwordSection.style.display = 'none';
+                generateBtn.textContent = '📝 포스트 생성';
+                toggleText.textContent = '📄 일반';
+            }
+        });
+
+        function updatePreview() {
+            const content = markdownInput.value;
+            if (content.trim()) {
+                preview.innerHTML = marked.parse(content);
+            } else {
+                preview.innerHTML = '<p style="color: var(--text-secondary); opacity: 0.5;">미리보기가 여기에 표시됩니다...</p>';
+            }
+        }
+
+        // Toolbar functions
+        function insertText(before, after) {
+            const start = markdownInput.selectionStart;
+            const end = markdownInput.selectionEnd;
+            const text = markdownInput.value;
+            const selected = text.substring(start, end);
+
+            markdownInput.value = text.substring(0, start) + before + selected + after + text.substring(end);
+            markdownInput.focus();
+            markdownInput.setSelectionRange(start + before.length, start + before.length + selected.length);
+            updatePreview();
+            debouncedSave();
+        }
+
+        // Generate post (encrypted or normal)
+        function generatePost() {
+            const content = markdownInput.value;
+            const title = document.getElementById('post-title').value || 'Untitled Post';
+            const date = document.getElementById('post-date').value;
+            const category = document.getElementById('post-category').value;
+            const isEncrypted = document.getElementById('encrypt-toggle').checked;
+
+            if (!content.trim()) {
+                alert('콘텐츠를 입력해주세요.');
+                return;
+            }
+
+            let output;
+            if (isEncrypted) {
+                const password = document.getElementById('password').value;
+                if (!password) {
+                    alert('비밀번호를 입력해주세요.');
+                    return;
+                }
+                const encrypted = CryptoJS.AES.encrypt(content, password).toString();
+                output = `---
+layout: encrypted
+title: "${title}"
+date: ${date}
+${category ? `categories: ${category}` : ''}
+encrypted: true
+---
+${encrypted}`;
+            } else {
+                output = `---
+layout: post
+title: "${title}"
+date: ${date}
+${category ? `categories: ${category}` : ''}
+---
+${content}`;
+            }
+
+            document.getElementById('output').textContent = output;
+            document.getElementById('output-section').classList.add('visible');
+        }
+
+        // Generate Jekyll-compatible filename
+        function generateFilename() {
+            const date = document.getElementById('post-date').value;
+            const title = document.getElementById('post-title').value || 'untitled';
+            // Convert title to slug: lowercase, replace spaces and special chars with hyphens
+            const slug = title
+                .toLowerCase()
+                .replace(/[^a-z0-9가-힣\s-]/g, '')
+                .replace(/\s+/g, '-')
+                .replace(/-+/g, '-')
+                .replace(/^-|-$/g, '');
+            return `${date}-${slug}.md`;
+        }
+
+        function downloadFile() {
+            const output = document.getElementById('output').textContent;
+            if (!output) {
+                alert('먼저 암호화를 진행해주세요.');
+                return;
+            }
+
+            const filename = generateFilename();
+            const blob = new Blob([output], { type: 'text/markdown' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showSaveStatus(`📥 ${filename} 다운로드 완료`);
+        }
+
+        function copyToClipboard() {
+            const output = document.getElementById('output').textContent;
+            if (!output) {
+                alert('먼저 암호화를 진행해주세요.');
+                return;
+            }
+            navigator.clipboard.writeText(output);
+            alert('클립보드에 복사되었습니다!');
+        }
+
+        function clearAll() {
+            if (!confirm('정말로 모든 내용을 삭제하시겠습니까?')) return;
+            markdownInput.value = '';
+            document.getElementById('password').value = '';
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-category').value = '';
+            document.getElementById('output-section').classList.remove('visible');
+            localStorage.removeItem(STORAGE_KEY);
+            updatePreview();
+            charCount.textContent = '0';
+            showSaveStatus('🗑️ 초기화 완료');
+        }
+
+        // Initial load
+        loadDraft();
+        updatePreview();
+    </script>
+</body>
+
+</html>

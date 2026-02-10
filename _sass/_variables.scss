@@ -1,0 +1,22 @@
+// Typography
+$font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+$font-family-serif: 'Merriweather', 'Georgia', serif;
+$font-family-mono: 'Fira Code', 'Consolas', monospace;
+
+// Colors - Light Mode
+$color-bg-light: #ffffff;
+$color-text-light: #2d3748;
+$color-primary-light: #2c5282;
+$color-secondary-light: #718096;
+$color-border-light: #e2e8f0;
+
+// Colors - Dark Mode
+$color-bg-dark: #1a202c;
+$color-text-dark: #e2e8f0;
+$color-primary-dark: #90cdf4;
+$color-secondary-dark: #a0aec0;
+$color-border-dark: #2d3748;
+
+// Spacing
+$spacing-unit: 1rem;
+$container-width: 800px;

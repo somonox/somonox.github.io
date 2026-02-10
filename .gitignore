@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Jekyll build output
+_site/
+.sass-cache/
+.jekyll-cache/
+.jekyll-metadata
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Ruby
+Gemfile.lock
+
+# Original unencrypted posts (keep private!)
+_drafts_original/

@@ -1,0 +1,56 @@
+html {
+    font-size: 16px;
+    box-sizing: border-box;
+}
+
+*,
+*:before,
+*:after {
+    box-sizing: inherit;
+}
+
+body {
+    font-family: $font-family-sans;
+    color: $color-text-light;
+    background-color: $color-bg-light;
+    line-height: 1.6;
+    margin: 0;
+    transition: background-color 0.3s ease, color 0.3s ease;
+
+    @media (prefers-color-scheme: dark) {
+        color: $color-text-dark;
+        background-color: $color-bg-dark;
+    }
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    font-family: $font-family-serif;
+    font-weight: 700;
+    line-height: 1.25;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+}
+
+a {
+    color: $color-primary-light;
+    text-decoration: none;
+    transition: color 0.2s ease;
+
+    &:hover {
+        text-decoration: underline;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        color: $color-primary-dark;
+    }
+}
+
+pre,
+code {
+    font-family: $font-family-mono;
+}
