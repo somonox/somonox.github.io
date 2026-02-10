@@ -24,6 +24,18 @@ permalink: /setup
 
 ---
 
+### 💻 Laptop
+
+| | Spec |
+|---|---|
+| **Model** | — |
+| **CPU** | — |
+| **RAM** | — |
+| **Storage** | — |
+| **OS** | — |
+
+---
+
 ### 🖥️ Peripherals
 
 | | Model |

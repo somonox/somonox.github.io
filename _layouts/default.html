@@ -17,6 +17,9 @@
     content="{{ page.excerpt | default: site.description | strip_html | normalize_whitespace | truncate: 160 | escape }}">
   <meta property="og:type" content="{% if page.layout == 'post' %}article{% else %}website{% endif %}">
 
+  <!-- Google Search Console -->
+  <meta name="google-site-verification" content="aAj4Mm-OVMUlcgCz_HWYEANJe7Qb7VmzXJM5tKidAho" />
+
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
