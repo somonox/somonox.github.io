@@ -1108,6 +1108,23 @@ th {
   color: var(--accent);
 }
 
+.footer-visitors {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.footer-visitors img {
+  height: 22px;
+  opacity: 0.7;
+  transition: opacity var(--transition);
+  border-radius: 4px;
+}
+
+.footer-visitors img:hover {
+  opacity: 1;
+}
+
 .footer-copy {
   font-size: 0.8rem;
   color: var(--text-muted);

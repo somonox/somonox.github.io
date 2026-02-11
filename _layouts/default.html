@@ -104,6 +104,11 @@
         <a href="{{ '/about' | relative_url }}">About</a>
         <a href="{{ '/setup' | relative_url }}">Setup</a>
       </div>
+      <div class="footer-visitors">
+        <img
+          src="https://hits.sh/{{ site.url | remove: 'https://' | remove: 'http://' }}.svg?style=flat&label=visitors&color=667eea&labelColor=1a1a2e"
+          alt="visitor count" loading="lazy">
+      </div>
       <p class="footer-copy">&copy; {{ 'now' | date: "%Y" }} {{ site.title | escape }}. Built with Jekyll.</p>
     </div>
   </footer>
