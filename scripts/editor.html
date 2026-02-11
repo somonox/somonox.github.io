@@ -10,6 +10,7 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <style>
         :root {
             --bg-primary: #0f0f1a;
@@ -655,6 +656,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <script>
         const STORAGE_KEY = 'postEditorDraft';
 
@@ -779,6 +782,13 @@
             if (content.trim()) {
                 const resolved = resolveImagePlaceholders(content);
                 preview.innerHTML = marked.parse(resolved);
+                renderMathInElement(preview, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
             } else {
                 preview.innerHTML = '<p style="color: var(--text-secondary); opacity: 0.5;">미리보기가 여기에 표시됩니다...</p>';
             }
