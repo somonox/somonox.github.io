@@ -12,6 +12,10 @@ author:
 
 show_excerpts: true
 
+# Kramdown (let KaTeX handle math rendering)
+kramdown:
+  math_engine: null
+
 exclude:
   - Gemfile
   - Gemfile.lock
