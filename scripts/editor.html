@@ -426,6 +426,88 @@
             border-top: 1px solid var(--border);
         }
 
+        /* Drop Overlay */
+        .editor-panel {
+            position: relative;
+        }
+
+        .drop-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(102, 126, 234, 0.12);
+            backdrop-filter: blur(2px);
+            border: 2px dashed var(--accent-1);
+            border-radius: 16px;
+            z-index: 10;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 0.75rem;
+            pointer-events: none;
+        }
+
+        .drop-overlay.active {
+            display: flex;
+            animation: dropPulse 1.5s ease-in-out infinite;
+        }
+
+        .drop-overlay .drop-icon {
+            font-size: 2.5rem;
+            filter: drop-shadow(0 4px 12px rgba(102, 126, 234, 0.4));
+        }
+
+        .drop-overlay .drop-text {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--accent-1);
+            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .drop-overlay .drop-sub {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        @keyframes dropPulse {
+
+            0%,
+            100% {
+                border-color: var(--accent-1);
+            }
+
+            50% {
+                border-color: var(--accent-2);
+            }
+        }
+
+        .file-processing {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.25rem 0.75rem;
+            background: rgba(102, 126, 234, 0.15);
+            border-radius: 12px;
+            font-size: 0.8rem;
+            color: var(--accent-1);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .file-processing .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            border-top-color: var(--accent-1);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
         /* Toggle Switch */
         .toggle-switch {
             display: flex;
@@ -498,9 +580,15 @@
         </div>
 
         <div class="editor-container">
-            <div class="panel">
+            <div class="panel editor-panel" id="editor-panel">
+                <div class="drop-overlay" id="drop-overlay">
+                    <span class="drop-icon">📎</span>
+                    <span class="drop-text">파일을 여기에 놓으세요</span>
+                    <span class="drop-sub">이미지, 텍스트, 마크다운 파일 지원</span>
+                </div>
                 <div class="panel-header">
                     <h2>📝 Markdown Editor</h2>
+                    <span id="file-status"></span>
                 </div>
                 <div class="toolbar">
                     <button onclick="insertText('**', '**')" title="Bold">B</button>
@@ -510,7 +598,9 @@
                     <button onclick="insertText('- ', '')" title="List">•</button>
                     <button onclick="insertText('`', '`')" title="Code">{ }</button>
                     <button onclick="insertText('[', '](url)')" title="Link">🔗</button>
+                    <button onclick="document.getElementById('file-input').click()" title="파일 첨부">📎</button>
                 </div>
+                <input type="file" id="file-input" accept="image/*,.md,.txt" multiple style="display:none">
                 <div class="panel-body">
                     <textarea id="markdown-input" placeholder="# 비밀 포스트
 
@@ -521,7 +611,9 @@
 
 **굵은 텍스트**와 *기울임 텍스트*를 사용할 수 있습니다.
 
-> 인용문도 지원됩니다."></textarea>
+> 인용문도 지원됩니다.
+
+💡 이미지를 붙여넣거나 드래그해서 추가할 수 있습니다."></textarea>
                 </div>
                 <div class="char-count">
                     <span id="char-count">0</span> 글자
@@ -565,6 +657,10 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         const STORAGE_KEY = 'postEditorDraft';
+
+        // Image store: maps short IDs to actual Base64 data URLs
+        const imageStore = new Map();
+        let imageCounter = 0;
 
         // Initialize
         document.getElementById('post-date').valueAsDate = new Date();
@@ -671,10 +767,18 @@
             }
         });
 
+        // Resolve blob:img_N placeholders to actual Base64 data
+        function resolveImagePlaceholders(text) {
+            return text.replace(/blob:img_(\d+)/g, (match) => {
+                return imageStore.get(match) || match;
+            });
+        }
+
         function updatePreview() {
             const content = markdownInput.value;
             if (content.trim()) {
-                preview.innerHTML = marked.parse(content);
+                const resolved = resolveImagePlaceholders(content);
+                preview.innerHTML = marked.parse(resolved);
             } else {
                 preview.innerHTML = '<p style="color: var(--text-secondary); opacity: 0.5;">미리보기가 여기에 표시됩니다...</p>';
             }
@@ -696,7 +800,7 @@
 
         // Generate post content (encrypted or normal)
         function generatePostContent() {
-            const content = markdownInput.value;
+            const content = resolveImagePlaceholders(markdownInput.value);
             const title = document.getElementById('post-title').value || 'Untitled Post';
             const date = document.getElementById('post-date').value;
             const category = document.getElementById('post-category').value;
@@ -827,10 +931,132 @@ ${content}`;
             document.getElementById('post-category').value = '';
             document.getElementById('output-section').classList.remove('visible');
             localStorage.removeItem(STORAGE_KEY);
+            imageStore.clear();
+            imageCounter = 0;
             updatePreview();
             charCount.textContent = '0';
             showSaveStatus('🗑️ 초기화 완료');
         }
+
+        // ===== File Paste / Drop / Attach =====
+        const editorPanel = document.getElementById('editor-panel');
+        const dropOverlay = document.getElementById('drop-overlay');
+        const fileInput = document.getElementById('file-input');
+        const fileStatus = document.getElementById('file-status');
+        let dragCounter = 0;
+
+        function showFileStatus(msg) {
+            fileStatus.innerHTML = `<span class="file-processing"><span class="spinner"></span>${msg}</span>`;
+            setTimeout(() => { fileStatus.innerHTML = ''; }, 3000);
+        }
+
+        function insertAtCursor(text) {
+            const start = markdownInput.selectionStart;
+            const end = markdownInput.selectionEnd;
+            const before = markdownInput.value.substring(0, start);
+            const after = markdownInput.value.substring(end);
+            // Ensure newlines around insertion
+            const prefix = before.length > 0 && !before.endsWith('\n') ? '\n' : '';
+            const suffix = after.length > 0 && !after.startsWith('\n') ? '\n' : '';
+            markdownInput.value = before + prefix + text + suffix + after;
+            const newPos = start + prefix.length + text.length;
+            markdownInput.setSelectionRange(newPos, newPos);
+            markdownInput.focus();
+            updatePreview();
+            charCount.textContent = markdownInput.value.length;
+            debouncedSave();
+        }
+
+        function processFile(file) {
+            if (file.type.startsWith('image/')) {
+                showFileStatus('이미지 처리 중...');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const dataUrl = e.target.result;
+                    const name = file.name.replace(/\s+/g, '_');
+                    // Store actual data, insert short placeholder
+                    imageCounter++;
+                    const blobId = `blob:img_${imageCounter}`;
+                    imageStore.set(blobId, dataUrl);
+                    insertAtCursor(`![${name}](${blobId})`);
+                    showFileStatus('✅ 이미지 삽입 완료');
+                };
+                reader.onerror = () => showFileStatus('❌ 파일 읽기 실패');
+                reader.readAsDataURL(file);
+            } else if (file.type === 'text/plain' || file.name.endsWith('.md') || file.name.endsWith('.txt')) {
+                showFileStatus('텍스트 파일 읽는 중...');
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    insertAtCursor(e.target.result);
+                    showFileStatus('✅ 텍스트 삽입 완료');
+                };
+                reader.onerror = () => showFileStatus('❌ 파일 읽기 실패');
+                reader.readAsText(file);
+            } else {
+                showFileStatus(`⚠️ 지원하지 않는 파일: ${file.name}`);
+            }
+        }
+
+        // Paste handler
+        markdownInput.addEventListener('paste', (e) => {
+            const items = e.clipboardData?.items;
+            if (!items) return;
+            for (const item of items) {
+                if (item.type.startsWith('image/')) {
+                    e.preventDefault();
+                    const file = item.getAsFile();
+                    if (file) processFile(file);
+                    return;
+                }
+            }
+            // If no image found, let default text paste happen
+        });
+
+        // Drag and drop handlers
+        editorPanel.addEventListener('dragenter', (e) => {
+            e.preventDefault();
+            dragCounter++;
+            if (e.dataTransfer?.types?.includes('Files')) {
+                dropOverlay.classList.add('active');
+            }
+        });
+
+        editorPanel.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'copy';
+        });
+
+        editorPanel.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dragCounter--;
+            if (dragCounter <= 0) {
+                dragCounter = 0;
+                dropOverlay.classList.remove('active');
+            }
+        });
+
+        editorPanel.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dragCounter = 0;
+            dropOverlay.classList.remove('active');
+            const files = e.dataTransfer?.files;
+            if (files) {
+                for (const file of files) {
+                    processFile(file);
+                }
+            }
+        });
+
+        // File input (toolbar button) handler
+        fileInput.addEventListener('change', (e) => {
+            const files = e.target.files;
+            if (files) {
+                for (const file of files) {
+                    processFile(file);
+                }
+            }
+            fileInput.value = ''; // Reset so same file can be selected again
+        });
 
         // Initial load
         loadDraft();
