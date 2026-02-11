@@ -66,6 +66,7 @@ int main(){
 # 설계 및 시나리오
 이제 처음 랜덤 값을 알아 내었으니 xor의 가역성을 이용하여 key를 구할 수있습니다!
 <br>
+
 $$
 key \oplus rand = \mathrm{0x}CAFEBABE\\\\
 \mathrm{0x}CAFEBABE\oplus rand = key \\\\

@@ -185,13 +185,37 @@
 
   <!-- KaTeX -->
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
-  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {
-      delimiters: [
-        {left: '$$', right: '$$', display: true},
-        {left: '$', right: '$', display: false}
-      ],
-      throwOnError: false
-    });"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Wait for KaTeX to load
+      var check = setInterval(function () {
+        if (typeof katex === "undefined" || typeof renderMathInElement === "undefined") return;
+        clearInterval(check);
+
+        // 1. Render kramdown math/tex script tags
+        var mathScripts = document.querySelectorAll("script[type^='math/tex']");
+        for (var i = 0; i < mathScripts.length; i++) {
+          var el = mathScripts[i];
+          var display = el.type.indexOf("mode=display") > -1;
+          var container = document.createElement(display ? "div" : "span");
+          katex.render(el.textContent, container, { displayMode: display, throwOnError: false });
+          el.parentNode.replaceChild(container, el);
+        }
+
+        // 2. Also handle raw $$ and $ delimiters
+        renderMathInElement(document.body, {
+          delimiters: [
+            { left: "$$", right: "$$", display: true },
+            { left: "$", right: "$", display: false },
+            { left: "\\(", right: "\\)", display: false },
+            { left: "\\[", right: "\\]", display: true }
+          ],
+          throwOnError: false
+        });
+      }, 50);
+    });
+  </script>
 </body>
 
 </html>

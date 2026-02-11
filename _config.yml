@@ -12,6 +12,9 @@ author:
 
 show_excerpts: true
 
+kramdown:
+  math_engine: mathjax
+
 exclude:
   - Gemfile
   - Gemfile.lock
