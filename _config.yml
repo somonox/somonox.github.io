@@ -13,7 +13,7 @@ author:
 show_excerpts: true
 
 kramdown:
-  math_engine: mathjax
+  math_engine: null
 
 exclude:
   - Gemfile
