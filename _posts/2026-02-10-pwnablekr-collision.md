@@ -2,7 +2,7 @@
 layout: post
 title: "pwnable.kr - collision"
 date: 2026-02-10
-categories: pwnable, crypto, wargame
+categories: [pwnable, crypto, wargame]
 ---
 # collision
 > 아빠가 오늘 MD5 해시 충돌을 알려주셨어요. 나도 그런걸 해보고 싶어요!
