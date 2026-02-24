@@ -69,3 +69,4 @@ cmd2@ubuntu:/tmp/aa$ /home/cmd2/cmd2 ".\$(printf '\057')cat ddong"
 cmd2@ubuntu:/tmp/aa$ /home/cmd2/cmd2 ".\$(printf '\057')cat ddong"
 .$(printf '\057')cat ddong
 Shell_variables_can_be_quite_fun_to_play_with!
+```
